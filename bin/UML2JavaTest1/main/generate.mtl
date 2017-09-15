@@ -1,0 +1,79 @@
+[comment encoding = UTF-8 /]
+[module generate('http://www.eclipse.org/uml2/5.0.0/UML','http://www.eclipse.org/emf/2002/Ecore')]
+
+
+[template public generateElement(aModel : Model)]
+[comment @main/]
+[file (aModel.name, false, 'UTF-8')]
+
+This is a test
+
+[for (c:Class | aModel.eContents(Class)) ]
+[c.name/]
+   [for (object:EObject | c.getStereotypeApplications()) ]
+   1.[object.eContainer()/]
+   2.[object.eClass()/]
+   3.[object.eClass().name/]
+       [for (attribute:EAttribute | object.eClass().eAllAttributes) ]
+------>[attribute.name/] 
+       [attribute.eAttributeType.name/]
+       [attribute.eAttributeType/]
+       [object.eGet(attribute)/]
+       [/for]
+   [/for]
+
+
+
+
+   [for (subc:Class | c.eContents(Class)) ]
+-->[subc.datatypegenerate()/]
+   
+     [for (property:Property | subc.attribute) ]
+---->[property.name/] : [property.type.name/]
+     [property.type/]
+     
+     [/for]
+
+     [for (property:EAttribute | subc.eClass().eAllAttributes) ]
+---->[property.name/] : [property.eAttributeType.name/]
+     [property.eAttributeType/]
+     [/for]
+
+   [/for]
+[/for]
+
+
+----namedelements----
+[for (e:NamedElement | aModel.eContents(NamedElement)) ]
+<<[e.getStereotypeApplications().eClass().name/]>> [e.eClass().name/] : [e.name/]
+[e.getSourceDirectedRelationships()/]
+[e.getTargetDirectedRelationships()/]
+
+[/for]
+
+[/file]
+[/template]
+
+
+
+[template public datatypegenerate(aClass : Class)]
+ [file (aClass.name.concat('.java'), false)]
+   public class [aClass.name.toUpperFirst()/] {
+   [for (p: Property | aClass.attribute) separator('\n')]
+     private [p.type.name/] [p.name/];
+   [/for]
+ 
+   [for (p: Property | aClass.attribute) separator('\n')]
+     public [p.type.name/] get[p.name.toUpperFirst()/]() {
+       return this.[p.name/];
+     }
+   [/for]
+ 
+   [for (o: Operation | aClass.ownedOperation) separator('\n')]
+     public [o.type.name/] [o.name/]() {
+       // TODO should be implemented
+     }
+   [/for]
+   }
+ [/file]
+ [/template]
