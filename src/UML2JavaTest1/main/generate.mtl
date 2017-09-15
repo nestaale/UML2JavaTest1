@@ -58,27 +58,38 @@ This is a test
 
 [template public datatypegenerate(aClass : Class)]
 [file (aClass.name.concat('.java'), false)]
+
+
 public class [aClass.name.toUpperFirst()/] {
   [for (p: Property | aClass.attribute) separator('\n')]
-  private [p.type.name/] [p.name/];
+    private [p.type.name/] [p.name/];
   [/for]
  
-  public [aClass.name.toUpperFirst()/]([for (p: Property | aClass.attribute) separator(',')][p.type.name/] [p.name/][/for]) {
-  [for (p: Property | aClass.attribute)]
-    this.[p.name/] = [p.name/];
-  [/for]     
-  }
+    public [aClass.name.toUpperFirst()/]() {
 
-  [for (p: Property | aClass.attribute) separator('\n')]
-  public [p.type.name/] get[p.name.toUpperFirst()/]() {
-    return this.[p.name/];
-  }
+    }
 
-  public void set[p.name.toUpperFirst()/]([p.type.name/] [p.name/]) {
-    this.[p.name/] = [p.name/];
-  }
-  [/for]
+    public [aClass.name.toUpperFirst()/]([for (p: Property | aClass.attribute) separator(',')][p.type.name/] [p.name/][/for]) {
+    [for (p: Property | aClass.attribute)]
+        this.[p.name/] = [p.name/];
+    [/for]     
+    }
+
+    [for (p: Property | aClass.attribute) separator('\n')]
+    public [p.type.name/] get[p.name.toUpperFirst()/]() {
+        return [p.name/];
+    }
+
+    public void set[p.name.toUpperFirst()/]([p.type.name/] [p.name/]) {
+        this.[p.name/] = [p.name/];
+    }
+    [/for]
  
- }
- [/file]
- [/template]
+    @Override
+    public String toString() {
+        return "(" + [for (p: Property | aClass.attribute) separator(' + ')]this.[p.name/][/for] + ")";
+    }
+
+}
+[/file]
+[/template]
