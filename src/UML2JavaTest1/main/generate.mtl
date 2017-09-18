@@ -4,67 +4,62 @@
 
 [template public generateElement(aModel : Model)]
 [comment @main/]
-[file (aModel.name.concat('.log'), false, 'UTF-8')]
-
-Log file generated for [aModel.name/]
+[file (aModel.name.toLower().concat('/application/').concat(aModel.name.concat('.java')), false, 'UTF-8')]
+package [aModel.name.toLower().concat('.application')/];
 
 [for (c:Class | aModel.eContents(Class)) ]
-parsing class [c.name/]
   [if c.name.strstr('DataTypes')]
-  Generating Datatypes
     [for (subc:Class | c.eContents(Class)) ]
-      generating file [subc.name.concat('.java')/]
+import [aModel.name.toLower()/].datatypes.[subc.name/];
       [subc.datatypesgenerate()/]
     [/for]
   [else]
-
      [for (object:EObject | c.getStereotypeApplications()) ]
-     2.[object.eClass()/]
-     3.[object.eClass().name/]
          [for (attribute:EAttribute | object.eClass().eAllAttributes) ]
-  ------>[attribute.name/]
          [if attribute.name.strstr('Function')]
-            Generating Function [c.name/].java
+import [aModel.name.toLower()/].functions.[c.name/];
             [c.functionsgenerate()/]
          [/if]
-         [attribute.eAttributeType.name/]
-         [attribute.eAttributeType/]
-         [object.eGet(attribute)/]
          [/for]
      [/for]
-
   [/if]
-
-
-
-
-
 [/for]
 
+public class [aModel.name/] {
 
-----namedelements----
-[for (e:NamedElement | aModel.eContents(NamedElement)) ]
-<<[e.getStereotypeApplications().eClass().name/]>> [e.eClass().name/] : [e.name/]
-[e.getSourceDirectedRelationships()/]
-1.[e.getSourceDirectedRelationships().eClass().eAllReferences.eGet('conveyed')/]
-2.[e.getSourceDirectedRelationships().eClass().eAllStructuralFeatures/]
+    public static void main(String['['/][']'/] args) throws Exception {
 
-[for (feature : EReference | e.getSourceDirectedRelationships().eClass().eReferences)]
-3.[e.getSourceDirectedRelationships().eClass().eGet(feature)/]
+       final StreamExcecutionEnvironment env = StreamExcecutionEnvironment
+               .getExcecutionEnvironment();
+
+       env.setParallelism(1);
+
+[for (c:Class | aModel.eContents(Class)) ]
+  [for (object:EObject | c.getStereotypeApplications()) ]
+    [if c.name.strstr('DataSource')]  
+       DataStream<> [c.getSourceDirectedRelationships().eGet('name')/] = env.socketTextStream("[object.eGet('host')/]", [object.eGet('port')/])
+                .setParallelism([object.eGet('parallelism')/]);
+
+    [elseif c.name.strstr('FileWriter')]
+       [c.getTargetDirectedRelationships().eGet('name')/]
+          .keyBy("")
+          .writeAsText("[object.eGet('filepath')/]")
+          .setParallelism([object.eGet('parallelism')/]);
+    
+    [else]
+       DataStream<> [c.getSourceDirectedRelationships().eGet('name')/] = [c.getTargetDirectedRelationships().eGet('name')/]
+          .setParallelism([object.eGet('parallelism')/]);
+
+    [/if]
+  [/for]
 [/for]
+    }
 
-
-
-
-
-
-
-[e.getTargetDirectedRelationships()/]
-
-[/for]
-
+}
 [/file]
 [/template]
+
+
 
 
 
