@@ -51,6 +51,7 @@ public class [aModel.name/] {
          [if object.eClass().name.strstr('FlatmapOperation')]
           .flatMap(new [c.name/]())
          [elseif object.eClass().name.strstr('SumOperation')]
+          .sum("")
          [/if]
           .setParallelism([object.eGet('parallelism')/]);
 
@@ -69,13 +70,15 @@ public class [aModel.name/] {
 
 [template public functionsgenerate(aClass : Class)]
 [file (aClass.getModel().name.toLower().concat('/functions/').concat(aClass.name).concat('.java'), false)]
+package [aClass.getModel().name.toLower().concat('.functions')/];
+
   [for (object:EObject | aClass.getStereotypeApplications()) ]
     [for (attribute:EAttribute | object.eClass().eAllAttributes) ]
        [if attribute.name.strstr('Function')]
-public class [aClass.name.toUpperFirst()/] implements [attribute.name.toUpperFirst()/]<[attribute.eAttributeType.name/], *WordCount*> {
+public class [aClass.name.toUpperFirst()/] implements [attribute.name.toUpperFirst()/]<[aClass.getTargetDirectedRelationships().eGet('conveyed').name/], [aClass.getSourceDirectedRelationships().eGet('conveyed').name/]> {
 
   @Override
-  public void [attribute.name.substring(1,attribute.name.size()-8)/] ([attribute.eAttributeType.name/] value, Collector<*WordCount*> out) {
+  public void [attribute.name.substring(1,attribute.name.size()-8)/] ([aClass.getTargetDirectedRelationships().eGet('conveyed').name/] value, Collector<[aClass.getSourceDirectedRelationships().eGet('conveyed').name/]> out) {
     [object.eGet(attribute)/]
   }
 }
@@ -89,7 +92,7 @@ public class [aClass.name.toUpperFirst()/] implements [attribute.name.toUpperFir
 
 [template public datatypesgenerate(aClass : Class)]
 [file (aClass.getModel().name.toLower().concat('/datatypes/').concat(aClass.name).concat('.java'), false)]
-
+package [aClass.getModel().name.toLower().concat('.datatypes')/];
 
 public class [aClass.name/] {
   [for (p: Property | aClass.attribute) separator('\n')]
