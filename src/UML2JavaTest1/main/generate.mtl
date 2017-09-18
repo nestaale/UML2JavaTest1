@@ -4,41 +4,124 @@
 
 [template public generateElement(aModel : Model)]
 [comment @main/]
-[file (aModel.name, false, 'UTF-8')]
+[file (aModel.name.concat('.log'), false, 'UTF-8')]
 
-This is a test
+Log file generated for [aModel.name/]
 
 [for (c:Class | aModel.eContents(Class)) ]
-[c.name/]
-   [for (object:EObject | c.getStereotypeApplications()) ]
-   1.[object.eContainer()/]
-   2.[object.eClass()/]
-   3.[object.eClass().name/]
-       [for (attribute:EAttribute | object.eClass().eAllAttributes) ]
------->[attribute.name/] 
-       [attribute.eAttributeType.name/]
-       [object.eGet(attribute)/]
-       [/for]
-   [/for]
+parsing class [c.name/]
+  [if c.name.strstr('DataTypes')]
+  Generating Datatypes
+    [for (subc:Class | c.eContents(Class)) ]
+      generating file [subc.name.concat('.java')/]
+      [subc.datatypesgenerate()/]
+    [/for]
+  [else]
 
-
-
-
-   [for (subc:Class | c.eContents(Class)) ]
--->[subc.name/]
-     [for (property:Property | subc.attribute) ]
----->[property.name/] : [property.type.name/]
-     [property.type/]
+     [for (object:EObject | c.getStereotypeApplications()) ]
+     2.[object.eClass()/]
+     3.[object.eClass().name/]
+         [for (attribute:EAttribute | object.eClass().eAllAttributes) ]
+  ------>[attribute.name/]
+         [if attribute.name.strstr('Function')]
+            Generating Function [c.name/].java
+            [c.functionsgenerate()/]
+         [/if]
+         [attribute.eAttributeType.name/]
+         [attribute.eAttributeType/]
+         [object.eGet(attribute)/]
+         [/for]
      [/for]
 
-   [/for]
+  [/if]
+
+
+
+
+
 [/for]
 
 
 ----namedelements----
 [for (e:NamedElement | aModel.eContents(NamedElement)) ]
-[e.name/]
+<<[e.getStereotypeApplications().eClass().name/]>> [e.eClass().name/] : [e.name/]
+[e.getSourceDirectedRelationships()/]
+1.[e.getSourceDirectedRelationships().eClass().eAllReferences.eGet('conveyed')/]
+2.[e.getSourceDirectedRelationships().eClass().eAllStructuralFeatures/]
+
+[for (feature : EReference | e.getSourceDirectedRelationships().eClass().eReferences)]
+3.[e.getSourceDirectedRelationships().eClass().eGet(feature)/]
 [/for]
 
+
+
+
+
+
+
+[e.getTargetDirectedRelationships()/]
+
+[/for]
+
+[/file]
+[/template]
+
+
+
+[template public functionsgenerate(aClass : Class)]
+[file (aClass.name.concat('.java'), false)]
+  [for (object:EObject | aClass.getStereotypeApplications()) ]
+    [for (attribute:EAttribute | object.eClass().eAllAttributes) ]
+       [if attribute.name.strstr('Function')]
+public class [aClass.name.toUpperFirst()/] implements [attribute.name.toUpperFirst()/]<[attribute.eAttributeType.name/], *WordCount*> {
+
+  @Override
+  public void [attribute.name.substring(1,attribute.name.size()-8)/] ([attribute.eAttributeType.name/] value, Collector<*WordCount*> out) {
+    [object.eGet(attribute)/]
+  }
+}
+      [/if]
+    [/for]
+  [/for]
+[/file]
+[/template]
+
+
+
+[template public datatypesgenerate(aClass : Class)]
+[file (aClass.name.concat('.java'), false)]
+
+
+public class [aClass.name/] {
+  [for (p: Property | aClass.attribute) separator('\n')]
+    private [p.type.name/] [p.name/];
+  [/for]
+ 
+    public [aClass.name/]() {
+
+    }
+
+    public [aClass.name/]([for (p: Property | aClass.attribute) separator(',')][p.type.name/] [p.name/][/for]) {
+    [for (p: Property | aClass.attribute)]
+        this.[p.name/] = [p.name/];
+    [/for]     
+    }
+
+    [for (p: Property | aClass.attribute) separator('\n')]
+    public [p.type.name/] get[p.name/]() {
+        return [p.name/];
+    }
+
+    public void set[p.name/]([p.type.name/] [p.name/]) {
+        this.[p.name/] = [p.name/];
+    }
+    [/for]
+ 
+    @Override
+    public String toString() {
+        return "(" + [for (p: Property | aClass.attribute) separator(' + ')]this.[p.name/][/for] + ")";
+    }
+
+}
 [/file]
 [/template]
