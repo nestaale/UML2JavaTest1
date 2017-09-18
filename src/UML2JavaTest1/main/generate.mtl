@@ -36,18 +36,22 @@ public class [aModel.name/] {
 
 [for (c:Class | aModel.eContents(Class)) ]
   [for (object:EObject | c.getStereotypeApplications()) ]
-    [if c.name.strstr('DataSource')]  
-       DataStream<> [c.getSourceDirectedRelationships().eGet('name')/] = env.socketTextStream("[object.eGet('host')/]", [object.eGet('port')/])
+    [if c.name.strstr('DataTypes')]
+    [elseif c.name.strstr('DataSource')]  
+       DataStream<[c.getSourceDirectedRelationships().eGet('conveyed').name/]> [c.getSourceDirectedRelationships().eGet('name')/] = env.socketTextStream("[object.eGet('host')/]", [object.eGet('port')/])
                 .setParallelism([object.eGet('parallelism')/]);
 
     [elseif c.name.strstr('FileWriter')]
        [c.getTargetDirectedRelationships().eGet('name')/]
-          .keyBy("")
+          .keyBy("[c.getTargetDirectedRelationships().eContents()/]")
           .writeAsText("[object.eGet('filepath')/]")
           .setParallelism([object.eGet('parallelism')/]);
-    
     [else]
-       DataStream<> [c.getSourceDirectedRelationships().eGet('name')/] = [c.getTargetDirectedRelationships().eGet('name')/]
+       DataStream<[c.getSourceDirectedRelationships().eGet('conveyed').name/]> [c.getSourceDirectedRelationships().eGet('name')/] = [c.getTargetDirectedRelationships().eGet('name')/]
+         [if object.eClass().name.strstr('FlatmapOperation')]
+          .flatMap(new [c.name/]())
+         [elseif object.eClass().name.strstr('SumOperation')]
+         [/if]
           .setParallelism([object.eGet('parallelism')/]);
 
     [/if]
@@ -64,7 +68,7 @@ public class [aModel.name/] {
 
 
 [template public functionsgenerate(aClass : Class)]
-[file (aClass.name.concat('.java'), false)]
+[file (aClass.getModel().name.toLower().concat('/functions/').concat(aClass.name).concat('.java'), false)]
   [for (object:EObject | aClass.getStereotypeApplications()) ]
     [for (attribute:EAttribute | object.eClass().eAllAttributes) ]
        [if attribute.name.strstr('Function')]
@@ -84,7 +88,7 @@ public class [aClass.name.toUpperFirst()/] implements [attribute.name.toUpperFir
 
 
 [template public datatypesgenerate(aClass : Class)]
-[file (aClass.name.concat('.java'), false)]
+[file (aClass.getModel().name.toLower().concat('/datatypes/').concat(aClass.name).concat('.java'), false)]
 
 
 public class [aClass.name/] {
