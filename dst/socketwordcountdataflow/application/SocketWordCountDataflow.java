@@ -17,14 +17,17 @@ public class SocketWordCountDataflow {
        DataStream<> text = env.socketTextStream("localhost", 9999)
                 .setParallelism(1);
 
-       DataStream<> tokens = text
+       DataStream<WordCount> tokens = text
+          .flatMap(new LineSplitter())
           .setParallelism(1);
 
-       DataStream<> counts = tokens
+       DataStream<WordCount> counts = tokens
+          .keyBy("word").
+          .sum("")
           .setParallelism(1);
 
        counts
-          .keyBy("")
+          .keyBy("word").
           .writeAsText("/home/utente/word-count-output.txt")
           .setParallelism(1);
     }
