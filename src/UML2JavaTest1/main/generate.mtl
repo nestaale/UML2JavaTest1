@@ -43,15 +43,20 @@ public class [aModel.name/] {
 
     [elseif c.name.strstr('FileWriter')]
        [c.getTargetDirectedRelationships().eGet('name')/]
-          .keyBy("[c.getTargetDirectedRelationships().eContents()/]")
+         [if c.getTargetDirectedRelationships().getStereotypeApplications().eClass().name = Bag{'KeyedDataStream'} ]
+          .keyBy("[c.getTargetDirectedRelationships().getStereotypeApplications().eGet('key').eGet('name')/]").
+         [/if]
           .writeAsText("[object.eGet('filepath')/]")
           .setParallelism([object.eGet('parallelism')/]);
     [else]
        DataStream<[c.getSourceDirectedRelationships().eGet('conveyed').name/]> [c.getSourceDirectedRelationships().eGet('name')/] = [c.getTargetDirectedRelationships().eGet('name')/]
+         [if c.getTargetDirectedRelationships().getStereotypeApplications().eClass().name = Bag{'KeyedDataStream'} ]
+          .keyBy("[c.getTargetDirectedRelationships().getStereotypeApplications().eGet('key').eGet('name')/]").
+         [/if]
          [if object.eClass().name.strstr('FlatmapOperation')]
           .flatMap(new [c.name/]())
          [elseif object.eClass().name.strstr('SumOperation')]
-          .sum("")
+          .sum("[object.eClass().eReferences.eGet('field')/]")
          [/if]
           .setParallelism([object.eGet('parallelism')/]);
 
