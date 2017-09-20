@@ -55,8 +55,8 @@ public class [aModel.name/] {
          [/if]
          [if object.eClass().name.strstr('FlatmapOperation')]
           .flatMap(new [c.name/]())
-         [elseif object.eClass().name.strstr('SumOperation')]
-          .sum("[object.eClass().eReferences.eGet('field')/]")
+         [elseif object.eClass().name.strstr('SumOperation')]      
+          .sum("[object.eGet('field').eGet('name')/]").
          [/if]
           .setParallelism([object.eGet('parallelism')/]);
 
