@@ -1,7 +1,9 @@
-public class LineSplitter implements FlatMapFunction<String, *WordCount*> {
+package socketwordcountdataflow.functions;
+
+public class LineSplitter implements FlatMapFunction<String, WordCount> {
 
   @Override
-  public void flatMap (String value, Collector<*WordCount*> out) {
+  public void flatMap (String value, Collector<WordCount> out) {
     String[] tokens = value.toLowerCase().split("\\W+");
 
 for (String token : tokens) {

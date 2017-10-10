@@ -14,7 +14,7 @@ public class SocketWordCountDataflow {
 
        env.setParallelism(1);
 
-       DataStream<> text = env.socketTextStream("localhost", 9999)
+       DataStream<String> text = env.socketTextStream("localhost", 9999)
                 .setParallelism(1);
 
        DataStream<WordCount> tokens = text
@@ -22,14 +22,15 @@ public class SocketWordCountDataflow {
           .setParallelism(1);
 
        DataStream<WordCount> counts = tokens
-          .keyBy("word").
-          .sum("")
+          .keyBy("word")
+          .sum("count")
           .setParallelism(1);
 
        counts
-          .keyBy("word").
+          .keyBy("word")
           .writeAsText("/home/utente/word-count-output.txt")
           .setParallelism(1);
     }
 
+    env.execute();
 }
